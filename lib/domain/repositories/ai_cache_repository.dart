@@ -3,4 +3,6 @@ abstract class AICacheRepository {
   Future<void> saveInsights(String key, Map<String, dynamic> payload);
   Future<Map<String, dynamic>?> getPredictions(String key);
   Future<void> savePredictions(String key, Map<String, dynamic> payload);
+  Future<Map<String, dynamic>?> getLifeWheel(String key);
+  Future<void> saveLifeWheel(String key, Map<String, dynamic> payload);
 }

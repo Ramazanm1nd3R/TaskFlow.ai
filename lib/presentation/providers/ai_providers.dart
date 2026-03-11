@@ -1,10 +1,12 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:taskflow_ai/data/datasources/local/ai_cache_local_datasource.dart';
+import 'package:taskflow_ai/data/datasources/remote/ai_remote_datasource.dart';
 import 'package:taskflow_ai/data/repositories/ai_cache_repository_impl.dart';
 import 'package:taskflow_ai/data/repositories/ai_repository_impl.dart';
 import 'package:taskflow_ai/domain/repositories/ai_cache_repository.dart';
 import 'package:taskflow_ai/domain/repositories/ai_repository.dart';
 import 'package:taskflow_ai/domain/usecases/ai/generate_insights_usecase.dart';
+import 'package:taskflow_ai/domain/usecases/ai/generate_life_wheel_analysis_usecase.dart';
 import 'package:taskflow_ai/domain/usecases/ai/generate_predictions_usecase.dart';
 import 'package:taskflow_ai/presentation/providers/analytics_providers.dart';
 
@@ -12,8 +14,12 @@ final aiCacheLocalDataSourceProvider = Provider<AICacheLocalDataSource>(
   (ref) => const AICacheLocalDataSource(),
 );
 
+final aiRemoteDataSourceProvider = Provider<AIRemoteDataSource>(
+  (ref) => const AIRemoteDataSource(),
+);
+
 final aiRepositoryProvider = Provider<AIRepository>(
-  (ref) => const AIRepositoryImpl(),
+  (ref) => AIRepositoryImpl(ref.watch(aiRemoteDataSourceProvider)),
 );
 
 final aiCacheRepositoryProvider = Provider<AICacheRepository>(
@@ -29,6 +35,14 @@ final generateInsightsUseCaseProvider = Provider<GenerateInsightsUseCase>(
 
 final generatePredictionsUseCaseProvider = Provider<GeneratePredictionsUseCase>(
   (ref) => GeneratePredictionsUseCase(
+    ref.watch(aiRepositoryProvider),
+    ref.watch(aiCacheRepositoryProvider),
+  ),
+);
+
+final generateLifeWheelAnalysisUseCaseProvider =
+    Provider<GenerateLifeWheelAnalysisUseCase>(
+  (ref) => GenerateLifeWheelAnalysisUseCase(
     ref.watch(aiRepositoryProvider),
     ref.watch(aiCacheRepositoryProvider),
   ),

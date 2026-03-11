@@ -1,13 +1,26 @@
+import 'package:taskflow_ai/core/env/app_config.dart';
+import 'package:taskflow_ai/data/datasources/remote/ai_remote_datasource.dart';
 import 'package:taskflow_ai/domain/entities/ai_insights.dart';
 import 'package:taskflow_ai/domain/entities/ai_predictions.dart';
 import 'package:taskflow_ai/domain/entities/analytics_data.dart';
+import 'package:taskflow_ai/domain/entities/life_wheel.dart';
 import 'package:taskflow_ai/domain/repositories/ai_repository.dart';
 
 class AIRepositoryImpl implements AIRepository {
-  const AIRepositoryImpl();
+  const AIRepositoryImpl(this._remoteDataSource);
+
+  final AIRemoteDataSource _remoteDataSource;
 
   @override
   Future<AIInsights> generateInsights(AnalyticsData analytics) async {
+    if (AppConfig.openAiKey.isNotEmpty) {
+      try {
+        return await _remoteDataSource.generateInsights(analytics);
+      } catch (_) {
+        // Fall back to deterministic copy if the API is unavailable.
+      }
+    }
+
     final topCategory = analytics.topCategories.isEmpty
         ? 'general'
         : analytics.topCategories.first.name;
@@ -27,6 +40,14 @@ class AIRepositoryImpl implements AIRepository {
 
   @override
   Future<AIPredictions> generatePredictions(AnalyticsData analytics) async {
+    if (AppConfig.openAiKey.isNotEmpty) {
+      try {
+        return await _remoteDataSource.generatePredictions(analytics);
+      } catch (_) {
+        // Fall back to deterministic copy if the API is unavailable.
+      }
+    }
+
     final nextWeekTasks = ((analytics.totalTasks / 7) * 1.15).round().clamp(1, 99);
     final risk = analytics.activeTasks > analytics.completedTasks
         ? 'Нагрузка повышена: активных задач больше, чем завершённых.'
@@ -43,6 +64,34 @@ class AIRepositoryImpl implements AIRepository {
       burnoutRisk: risk,
       dailyRecommendation: 'Оптимальная нагрузка сейчас около $dailyTarget задач в день.',
       completionSpeed: speed,
+    );
+  }
+
+  @override
+  Future<LifeWheelAnalysis> generateLifeWheelAnalysis(
+    List<LifeWheelCategory> categories,
+  ) async {
+    if (AppConfig.openAiKey.isNotEmpty) {
+      try {
+        return await _remoteDataSource.generateLifeWheelAnalysis(categories);
+      } catch (_) {
+        // Fall back to deterministic copy if the API is unavailable.
+      }
+    }
+
+    final sorted = [...categories]..sort((a, b) => a.score.compareTo(b.score));
+    final weakest = sorted.first;
+    final strongest = sorted.last;
+
+    return LifeWheelAnalysis(
+      summary:
+          'Сильнее всего сейчас выглядит зона ${strongest.label}, а самая проседающая часть колеса — ${weakest.label}.',
+      focusArea:
+          'Главная точка роста сейчас ${weakest.label}: именно там дисбаланс сильнее всего тянет общую картину вниз.',
+      encouragement:
+          'Колесо уже не пустое: у тебя есть опора в ${strongest.label}, значит и соседние области можно подтянуть без резких рывков.',
+      nextStep:
+          'Сделай один небольшой шаг в зоне ${weakest.label} в ближайшие 24 часа и затем пересобери wheel.',
     );
   }
 }
