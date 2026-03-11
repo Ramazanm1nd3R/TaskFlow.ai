@@ -119,7 +119,10 @@ class _LifeWheelPanel extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final categories = ref.watch(lifeWheelProvider);
-    final analysisAsync = ref.watch(lifeWheelAnalysisProvider);
+    final trigger = ref.watch(lifeWheelAnalysisTriggerProvider);
+    final analysisAsync = trigger == 0
+        ? null
+        : ref.watch(lifeWheelAnalysisProvider);
 
     return Card(
       child: Padding(
@@ -136,14 +139,35 @@ class _LifeWheelPanel extends ConsumerWidget {
             const SizedBox(height: 20),
             Center(
               child: SizedBox(
-                width: 300,
-                height: 300,
+                width: 320,
+                height: 320,
                 child: CustomPaint(
                   painter: _LifeWheelPainter(categories: categories),
                 ),
               ),
             ),
             const SizedBox(height: 20),
+            _AddCategoryRow(
+              count: categories.length,
+              onAdd: (label) {
+                final added =
+                    ref.read(lifeWheelProvider.notifier).addCategory(label);
+                final messenger = ScaffoldMessenger.of(context);
+                messenger.hideCurrentSnackBar();
+                messenger.showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      added
+                          ? 'Category added'
+                          : categories.length >= 10
+                              ? 'Maximum is 10 categories'
+                              : 'Category already exists or is invalid',
+                    ),
+                  ),
+                );
+              },
+            ),
+            const SizedBox(height: 16),
             for (final category in categories)
               Padding(
                 padding: const EdgeInsets.only(bottom: 14),
@@ -178,8 +202,26 @@ class _LifeWheelPanel extends ConsumerWidget {
                   ],
                 ),
               ),
-            analysisAsync.when(
-              data: (analysis) => Container(
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                FilledButton.icon(
+                  onPressed: () {
+                    ref.read(lifeWheelAnalysisTriggerProvider.notifier).state++;
+                  },
+                  icon: const Icon(Icons.auto_awesome),
+                  label: const Text('Analyze wheel'),
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  '${categories.length}/10 categories',
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            if (analysisAsync == null)
+              Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(18),
                 decoration: BoxDecoration(
@@ -187,24 +229,39 @@ class _LifeWheelPanel extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(18),
                   border: Border.all(color: AppColors.border),
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('AI analysis', style: Theme.of(context).textTheme.titleMedium),
-                    const SizedBox(height: 12),
-                    _LifeWheelInsight(label: 'Summary', value: analysis.summary),
-                    _LifeWheelInsight(label: 'Focus area', value: analysis.focusArea),
-                    _LifeWheelInsight(label: 'Encouragement', value: analysis.encouragement),
-                    _LifeWheelInsight(label: 'Next step', value: analysis.nextStep),
-                  ],
+                child: Text(
+                  'Adjust the wheel and tap "Analyze wheel" when you want AI feedback.',
+                  style: Theme.of(context).textTheme.bodyMedium,
                 ),
               ),
-              loading: () => const Padding(
-                padding: EdgeInsets.symmetric(vertical: 8),
-                child: LinearProgressIndicator(),
+            if (analysisAsync != null)
+              analysisAsync.when(
+                data: (analysis) => Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(18),
+                  decoration: BoxDecoration(
+                    color: AppColors.background,
+                    borderRadius: BorderRadius.circular(18),
+                    border: Border.all(color: AppColors.border),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('AI analysis', style: Theme.of(context).textTheme.titleMedium),
+                      const SizedBox(height: 12),
+                      _LifeWheelInsight(label: 'Summary', value: analysis.summary),
+                      _LifeWheelInsight(label: 'Focus area', value: analysis.focusArea),
+                      _LifeWheelInsight(label: 'Encouragement', value: analysis.encouragement),
+                      _LifeWheelInsight(label: 'Next step', value: analysis.nextStep),
+                    ],
+                  ),
+                ),
+                loading: () => const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 8),
+                  child: LinearProgressIndicator(),
+                ),
+                error: (error, _) => Text(error.toString()),
               ),
-              error: (error, _) => Text(error.toString()),
-            ),
           ],
         ),
       ),
@@ -338,8 +395,9 @@ class _LifeWheelPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
+    if (categories.isEmpty) return;
     final center = Offset(size.width / 2, size.height / 2);
-    final radius = size.width / 2 - 26;
+    final radius = size.width / 2 - 40;
     final segmentAngle = 6.2831 / categories.length;
 
     final gridPaint = Paint()
@@ -381,8 +439,8 @@ class _LifeWheelPainter extends CustomPainter {
 
       final labelAngle = startAngle + sweepAngle / 2;
       final labelOffset = Offset(
-        center.dx + (radius + 18) * cos(labelAngle),
-        center.dy + (radius + 18) * sin(labelAngle),
+        center.dx + (radius + 24) * cos(labelAngle),
+        center.dy + (radius + 24) * sin(labelAngle),
       );
 
       final textPainter = TextPainter(
@@ -410,6 +468,59 @@ class _LifeWheelPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant _LifeWheelPainter oldDelegate) {
     return oldDelegate.categories != categories;
+  }
+}
+
+class _AddCategoryRow extends StatefulWidget {
+  const _AddCategoryRow({
+    required this.count,
+    required this.onAdd,
+  });
+
+  final int count;
+  final ValueChanged<String> onAdd;
+
+  @override
+  State<_AddCategoryRow> createState() => _AddCategoryRowState();
+}
+
+class _AddCategoryRowState extends State<_AddCategoryRow> {
+  final _controller = TextEditingController();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isMax = widget.count >= 10;
+    return Row(
+      children: [
+        Expanded(
+          child: TextField(
+            controller: _controller,
+            enabled: !isMax,
+            decoration: InputDecoration(
+              labelText: 'Add custom category',
+              hintText: isMax ? 'Maximum reached' : 'Example: Spirituality',
+            ),
+          ),
+        ),
+        const SizedBox(width: 12),
+        FilledButton(
+          onPressed: isMax
+              ? null
+              : () {
+                  final value = _controller.text.trim();
+                  widget.onAdd(value);
+                  _controller.clear();
+                },
+          child: const Text('Add'),
+        ),
+      ],
+    );
   }
 }
 
