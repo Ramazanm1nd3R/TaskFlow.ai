@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:taskflow_ai/data/datasources/local/ai_cache_local_datasource.dart';
+import 'package:taskflow_ai/data/datasources/remote/ai_remote_datasource.dart';
 import 'package:taskflow_ai/data/repositories/ai_cache_repository_impl.dart';
 import 'package:taskflow_ai/data/repositories/ai_repository_impl.dart';
 import 'package:taskflow_ai/domain/repositories/ai_cache_repository.dart';
@@ -12,8 +13,12 @@ final aiCacheLocalDataSourceProvider = Provider<AICacheLocalDataSource>(
   (ref) => const AICacheLocalDataSource(),
 );
 
+final aiRemoteDataSourceProvider = Provider<AIRemoteDataSource>(
+  (ref) => const AIRemoteDataSource(),
+);
+
 final aiRepositoryProvider = Provider<AIRepository>(
-  (ref) => const AIRepositoryImpl(),
+  (ref) => AIRepositoryImpl(ref.watch(aiRemoteDataSourceProvider)),
 );
 
 final aiCacheRepositoryProvider = Provider<AICacheRepository>(

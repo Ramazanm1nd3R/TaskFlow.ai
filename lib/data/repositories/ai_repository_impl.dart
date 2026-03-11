@@ -1,13 +1,25 @@
+import 'package:taskflow_ai/core/env/app_config.dart';
+import 'package:taskflow_ai/data/datasources/remote/ai_remote_datasource.dart';
 import 'package:taskflow_ai/domain/entities/ai_insights.dart';
 import 'package:taskflow_ai/domain/entities/ai_predictions.dart';
 import 'package:taskflow_ai/domain/entities/analytics_data.dart';
 import 'package:taskflow_ai/domain/repositories/ai_repository.dart';
 
 class AIRepositoryImpl implements AIRepository {
-  const AIRepositoryImpl();
+  const AIRepositoryImpl(this._remoteDataSource);
+
+  final AIRemoteDataSource _remoteDataSource;
 
   @override
   Future<AIInsights> generateInsights(AnalyticsData analytics) async {
+    if (AppConfig.openAiKey.isNotEmpty) {
+      try {
+        return await _remoteDataSource.generateInsights(analytics);
+      } catch (_) {
+        // Fall back to deterministic copy if the API is unavailable.
+      }
+    }
+
     final topCategory = analytics.topCategories.isEmpty
         ? 'general'
         : analytics.topCategories.first.name;
@@ -27,6 +39,14 @@ class AIRepositoryImpl implements AIRepository {
 
   @override
   Future<AIPredictions> generatePredictions(AnalyticsData analytics) async {
+    if (AppConfig.openAiKey.isNotEmpty) {
+      try {
+        return await _remoteDataSource.generatePredictions(analytics);
+      } catch (_) {
+        // Fall back to deterministic copy if the API is unavailable.
+      }
+    }
+
     final nextWeekTasks = ((analytics.totalTasks / 7) * 1.15).round().clamp(1, 99);
     final risk = analytics.activeTasks > analytics.completedTasks
         ? 'Нагрузка повышена: активных задач больше, чем завершённых.'
