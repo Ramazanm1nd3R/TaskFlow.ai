@@ -17,7 +17,7 @@ class AIRemoteDataSource {
       messages: [
         OpenAIChatCompletionChoiceMessageModel(
           role: OpenAIChatMessageRole.system,
-          content: const [
+          content: [
             OpenAIChatCompletionChoiceMessageContentItemModel.text(
               'Ты аналитик продуктивности. Верни только JSON с ключами productivity, bestDay, completionTime, topCategory.',
             ),
@@ -47,7 +47,7 @@ class AIRemoteDataSource {
       messages: [
         OpenAIChatCompletionChoiceMessageModel(
           role: OpenAIChatMessageRole.system,
-          content: const [
+          content: [
             OpenAIChatCompletionChoiceMessageContentItemModel.text(
               'Ты AI-прогнозист продуктивности. Верни только JSON с ключами nextWeekForecast, burnoutRisk, dailyRecommendation, completionSpeed.',
             ),
