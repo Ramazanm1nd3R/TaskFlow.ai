@@ -1,7 +1,12 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:taskflow_ai/app/router/route_names.dart';
+import 'package:taskflow_ai/core/theme/app_colors.dart';
+import 'package:taskflow_ai/domain/entities/life_wheel.dart';
 import 'package:taskflow_ai/domain/entities/task.dart';
+import 'package:taskflow_ai/presentation/providers/life_wheel_providers.dart';
 import 'package:taskflow_ai/presentation/providers/pomodoro_provider.dart';
 import 'package:taskflow_ai/presentation/providers/task_providers.dart';
 import 'package:taskflow_ai/presentation/widgets/common/app_scaffold.dart';
@@ -75,6 +80,8 @@ class _ToolsContent extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 20),
+        const _LifeWheelPanel(),
+        const SizedBox(height: 20),
         Card(
           child: Padding(
             padding: const EdgeInsets.all(20),
@@ -102,6 +109,105 @@ class _ToolsContent extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _LifeWheelPanel extends ConsumerWidget {
+  const _LifeWheelPanel();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final categories = ref.watch(lifeWheelProvider);
+    final analysisAsync = ref.watch(lifeWheelAnalysisProvider);
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Life Wheel', style: Theme.of(context).textTheme.titleLarge),
+            const SizedBox(height: 10),
+            Text(
+              'Tune the sliders to reflect your current balance, then use AI analysis on top of the wheel.',
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+            const SizedBox(height: 20),
+            Center(
+              child: SizedBox(
+                width: 300,
+                height: 300,
+                child: CustomPaint(
+                  painter: _LifeWheelPainter(categories: categories),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            for (final category in categories)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 14),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          width: 12,
+                          height: 12,
+                          decoration: BoxDecoration(
+                            color: category.color,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(child: Text(category.label)),
+                        Text(category.score.toStringAsFixed(1)),
+                      ],
+                    ),
+                    Slider(
+                      value: category.score,
+                      min: 1,
+                      max: 10,
+                      divisions: 18,
+                      activeColor: category.color,
+                      onChanged: (value) => ref
+                          .read(lifeWheelProvider.notifier)
+                          .updateScore(category.key, value),
+                    ),
+                  ],
+                ),
+              ),
+            analysisAsync.when(
+              data: (analysis) => Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(18),
+                decoration: BoxDecoration(
+                  color: AppColors.background,
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(color: AppColors.border),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('AI analysis', style: Theme.of(context).textTheme.titleMedium),
+                    const SizedBox(height: 12),
+                    _LifeWheelInsight(label: 'Summary', value: analysis.summary),
+                    _LifeWheelInsight(label: 'Focus area', value: analysis.focusArea),
+                    _LifeWheelInsight(label: 'Encouragement', value: analysis.encouragement),
+                    _LifeWheelInsight(label: 'Next step', value: analysis.nextStep),
+                  ],
+                ),
+              ),
+              loading: () => const Padding(
+                padding: EdgeInsets.symmetric(vertical: 8),
+                child: LinearProgressIndicator(),
+              ),
+              error: (error, _) => Text(error.toString()),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -222,6 +328,120 @@ class _PomodoroPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant _PomodoroPainter oldDelegate) {
     return oldDelegate.progress != progress;
+  }
+}
+
+class _LifeWheelPainter extends CustomPainter {
+  const _LifeWheelPainter({required this.categories});
+
+  final List<LifeWheelCategory> categories;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = size.width / 2 - 26;
+    final segmentAngle = 6.2831 / categories.length;
+
+    final gridPaint = Paint()
+      ..color = AppColors.border
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1;
+
+    for (var i = 1; i <= 5; i++) {
+      canvas.drawCircle(center, radius * (i / 5), gridPaint);
+    }
+
+    for (var i = 0; i < categories.length; i++) {
+      final category = categories[i];
+      final startAngle = -1.5708 + segmentAngle * i;
+      final sweepAngle = segmentAngle;
+      final segmentRadius = radius * (category.score / 10);
+
+      final fillPaint = Paint()
+        ..color = category.color.withValues(alpha: 0.35)
+        ..style = PaintingStyle.fill;
+
+      final strokePaint = Paint()
+        ..color = category.color
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2;
+
+      final path = Path()
+        ..moveTo(center.dx, center.dy)
+        ..arcTo(
+          Rect.fromCircle(center: center, radius: segmentRadius),
+          startAngle,
+          sweepAngle,
+          false,
+        )
+        ..close();
+
+      canvas.drawPath(path, fillPaint);
+      canvas.drawPath(path, strokePaint);
+
+      final labelAngle = startAngle + sweepAngle / 2;
+      final labelOffset = Offset(
+        center.dx + (radius + 18) * cos(labelAngle),
+        center.dy + (radius + 18) * sin(labelAngle),
+      );
+
+      final textPainter = TextPainter(
+        text: TextSpan(
+          text: category.label,
+          style: const TextStyle(
+            fontSize: 11,
+            color: AppColors.textPrimary,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        textDirection: TextDirection.ltr,
+      )..layout(maxWidth: 72);
+
+      textPainter.paint(
+        canvas,
+        Offset(
+          labelOffset.dx - textPainter.width / 2,
+          labelOffset.dy - textPainter.height / 2,
+        ),
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _LifeWheelPainter oldDelegate) {
+    return oldDelegate.categories != categories;
+  }
+}
+
+class _LifeWheelInsight extends StatelessWidget {
+  const _LifeWheelInsight({
+    required this.label,
+    required this.value,
+  });
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: RichText(
+        text: TextSpan(
+          style: Theme.of(context).textTheme.bodyMedium,
+          children: [
+            TextSpan(
+              text: '$label: ',
+              style: const TextStyle(
+                color: AppColors.textPrimary,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            TextSpan(text: value),
+          ],
+        ),
+      ),
+    );
   }
 }
 

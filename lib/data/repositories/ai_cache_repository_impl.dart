@@ -14,10 +14,17 @@ class AICacheRepositoryImpl implements AICacheRepository {
       _local.getPredictions(key);
 
   @override
+  Future<Map<String, dynamic>?> getLifeWheel(String key) => _local.getLifeWheel(key);
+
+  @override
   Future<void> saveInsights(String key, Map<String, dynamic> payload) =>
       _local.saveInsights(key, payload);
 
   @override
   Future<void> savePredictions(String key, Map<String, dynamic> payload) =>
       _local.savePredictions(key, payload);
+
+  @override
+  Future<void> saveLifeWheel(String key, Map<String, dynamic> payload) =>
+      _local.saveLifeWheel(key, payload);
 }

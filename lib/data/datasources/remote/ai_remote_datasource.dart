@@ -4,6 +4,7 @@ import 'package:dart_openai/dart_openai.dart';
 import 'package:taskflow_ai/domain/entities/ai_insights.dart';
 import 'package:taskflow_ai/domain/entities/ai_predictions.dart';
 import 'package:taskflow_ai/domain/entities/analytics_data.dart';
+import 'package:taskflow_ai/domain/entities/life_wheel.dart';
 
 class AIRemoteDataSource {
   const AIRemoteDataSource();
@@ -68,6 +69,38 @@ class AIRemoteDataSource {
     return AIPredictions.fromJson(jsonDecode(raw) as Map<String, dynamic>);
   }
 
+  Future<LifeWheelAnalysis> generateLifeWheelAnalysis(
+    List<LifeWheelCategory> categories,
+  ) async {
+    final completion = await OpenAI.instance.chat.create(
+      model: 'gpt-4o-mini',
+      responseFormat: const {'type': 'json_object'},
+      temperature: 0.7,
+      maxTokens: 450,
+      messages: [
+        OpenAIChatCompletionChoiceMessageModel(
+          role: OpenAIChatMessageRole.system,
+          content: [
+            OpenAIChatCompletionChoiceMessageContentItemModel.text(
+              'Ты коуч по life wheel. Верни только JSON с ключами summary, focusArea, encouragement, nextStep.',
+            ),
+          ],
+        ),
+        OpenAIChatCompletionChoiceMessageModel(
+          role: OpenAIChatMessageRole.user,
+          content: [
+            OpenAIChatCompletionChoiceMessageContentItemModel.text(
+              _buildLifeWheelPrompt(categories),
+            ),
+          ],
+        ),
+      ],
+    );
+
+    final raw = _extractText(completion);
+    return LifeWheelAnalysis.fromJson(jsonDecode(raw) as Map<String, dynamic>);
+  }
+
   String _extractText(OpenAIChatCompletionModel completion) {
     final content = completion.choices.first.message.content;
     if (content == null || content.isEmpty) {
@@ -115,6 +148,26 @@ Trend:
 $dailyTrend
 
 Ответ нужен по-русски, в JSON.
+''';
+  }
+
+  String _buildLifeWheelPrompt(List<LifeWheelCategory> categories) {
+    final payload = categories
+        .map((category) => '- ${category.label}: ${category.score.toStringAsFixed(1)}/10')
+        .join('\n');
+
+    return '''
+Проанализируй life wheel пользователя.
+
+$payload
+
+Нужны:
+- краткое summary
+- слабая зона focusArea
+- короткое encouragement
+- один конкретный nextStep
+
+Ответ по-русски и строго JSON.
 ''';
   }
 }

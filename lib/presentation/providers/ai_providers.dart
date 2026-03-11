@@ -6,6 +6,7 @@ import 'package:taskflow_ai/data/repositories/ai_repository_impl.dart';
 import 'package:taskflow_ai/domain/repositories/ai_cache_repository.dart';
 import 'package:taskflow_ai/domain/repositories/ai_repository.dart';
 import 'package:taskflow_ai/domain/usecases/ai/generate_insights_usecase.dart';
+import 'package:taskflow_ai/domain/usecases/ai/generate_life_wheel_analysis_usecase.dart';
 import 'package:taskflow_ai/domain/usecases/ai/generate_predictions_usecase.dart';
 import 'package:taskflow_ai/presentation/providers/analytics_providers.dart';
 
@@ -34,6 +35,14 @@ final generateInsightsUseCaseProvider = Provider<GenerateInsightsUseCase>(
 
 final generatePredictionsUseCaseProvider = Provider<GeneratePredictionsUseCase>(
   (ref) => GeneratePredictionsUseCase(
+    ref.watch(aiRepositoryProvider),
+    ref.watch(aiCacheRepositoryProvider),
+  ),
+);
+
+final generateLifeWheelAnalysisUseCaseProvider =
+    Provider<GenerateLifeWheelAnalysisUseCase>(
+  (ref) => GenerateLifeWheelAnalysisUseCase(
     ref.watch(aiRepositoryProvider),
     ref.watch(aiCacheRepositoryProvider),
   ),

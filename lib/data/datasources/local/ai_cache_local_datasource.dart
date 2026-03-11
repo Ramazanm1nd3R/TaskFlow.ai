@@ -29,4 +29,16 @@ class AICacheLocalDataSource {
     final box = Hive.box<String>(HiveBoxes.aiPredictions);
     await box.put(key, jsonEncode(payload));
   }
+
+  Future<Map<String, dynamic>?> getLifeWheel(String key) async {
+    final box = Hive.box<String>(HiveBoxes.aiLifeWheel);
+    final raw = box.get(key);
+    if (raw == null) return null;
+    return jsonDecode(raw) as Map<String, dynamic>;
+  }
+
+  Future<void> saveLifeWheel(String key, Map<String, dynamic> payload) async {
+    final box = Hive.box<String>(HiveBoxes.aiLifeWheel);
+    await box.put(key, jsonEncode(payload));
+  }
 }
