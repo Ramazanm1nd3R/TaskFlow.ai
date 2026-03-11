@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:taskflow_ai/app/router/route_names.dart';
 import 'package:taskflow_ai/core/theme/app_colors.dart';
 import 'package:taskflow_ai/domain/entities/task.dart';
@@ -22,12 +21,8 @@ class DashboardScreen extends ConsumerWidget {
 
     return AppScaffold(
       title: 'TaskFlow AI',
+      currentRoute: RouteNames.dashboard,
       actions: [
-        IconButton(
-          onPressed: () => context.push(RouteNames.analytics),
-          icon: const Icon(Icons.analytics_outlined),
-          tooltip: 'Analytics',
-        ),
         Padding(
           padding: const EdgeInsets.only(right: 16),
           child: Center(

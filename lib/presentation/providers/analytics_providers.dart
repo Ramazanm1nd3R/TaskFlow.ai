@@ -4,9 +4,9 @@ import 'package:taskflow_ai/domain/entities/analytics_data.dart';
 import 'package:taskflow_ai/domain/entities/task.dart';
 import 'package:taskflow_ai/presentation/providers/task_providers.dart';
 
-final analyticsProvider = Provider<AsyncValue<AnalyticsData>>((ref) {
-  final tasksAsync = ref.watch(tasksControllerProvider);
-  return tasksAsync.whenData(_buildAnalytics);
+final analyticsProvider = FutureProvider<AnalyticsData>((ref) async {
+  final tasks = await ref.watch(tasksControllerProvider.future);
+  return _buildAnalytics(tasks);
 });
 
 AnalyticsData _buildAnalytics(List<Task> tasks) {

@@ -4,6 +4,8 @@ import 'package:taskflow_ai/app/router/route_names.dart';
 import 'package:taskflow_ai/presentation/providers/auth_providers.dart';
 import 'package:taskflow_ai/presentation/screens/analytics/analytics_screen.dart';
 import 'package:taskflow_ai/presentation/screens/dashboard/dashboard_screen.dart';
+import 'package:taskflow_ai/presentation/screens/profile/profile_screen.dart';
+import 'package:taskflow_ai/presentation/screens/tools/tools_screen.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   ref.watch(authControllerProvider);
@@ -32,6 +34,14 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: RouteNames.analytics,
         builder: (context, state) => const AnalyticsScreen(),
+      ),
+      GoRoute(
+        path: RouteNames.tools,
+        builder: (context, state) => const ToolsScreen(),
+      ),
+      GoRoute(
+        path: RouteNames.profile,
+        builder: (context, state) => const ProfileScreen(),
       ),
     ],
   );
