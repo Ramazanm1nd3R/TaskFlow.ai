@@ -2,6 +2,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:taskflow_ai/app/router/route_names.dart';
 import 'package:taskflow_ai/core/theme/app_colors.dart';
 import 'package:taskflow_ai/domain/entities/ai_insights.dart';
 import 'package:taskflow_ai/domain/entities/ai_predictions.dart';
@@ -22,6 +23,7 @@ class AnalyticsScreen extends ConsumerWidget {
 
     return AppScaffold(
       title: 'Analytics',
+      currentRoute: RouteNames.analytics,
       child: analyticsAsync.when(
         data: (analytics) => _AnalyticsContent(
           data: analytics,
