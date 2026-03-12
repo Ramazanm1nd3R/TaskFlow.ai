@@ -137,25 +137,25 @@ class _StatsCardsGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final stats = [
-      (
+      _StatCardData(
         icon: Icons.task_outlined,
         label: 'Total Tasks',
         value: '${data.totalTasks}',
         color: const Color(0xFF3B82F6),
       ),
-      (
+      _StatCardData(
         icon: Icons.bolt_outlined,
         label: 'Active',
         value: '${data.activeTasks}',
         color: const Color(0xFFF59E0B),
       ),
-      (
+      _StatCardData(
         icon: Icons.check_circle_outline,
         label: 'Completed',
         value: '${data.completedTasks}',
         color: const Color(0xFF10B981),
       ),
-      (
+      _StatCardData(
         icon: Icons.trending_up_outlined,
         label: 'Completion',
         value: '${data.completionRate}%',
@@ -163,31 +163,27 @@ class _StatsCardsGrid extends StatelessWidget {
       ),
     ];
 
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: stats.length,
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        mainAxisSpacing: 12,
-        crossAxisSpacing: 12,
-        mainAxisExtent: 136,
-      ),
-      itemBuilder: (context, index) {
-        final stat = stats[index];
-        return _StatCard(
-          icon: stat.icon,
-          label: stat.label,
-          value: stat.value,
-          color: stat.color,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final cardWidth = (constraints.maxWidth - 12) / 2;
+        return Wrap(
+          spacing: 12,
+          runSpacing: 12,
+          children: [
+            for (final stat in stats)
+              SizedBox(
+                width: cardWidth,
+                child: _StatCard(data: stat),
+              ),
+          ],
         );
       },
     );
   }
 }
 
-class _StatCard extends StatelessWidget {
-  const _StatCard({
+class _StatCardData {
+  const _StatCardData({
     required this.icon,
     required this.label,
     required this.value,
@@ -198,41 +194,50 @@ class _StatCard extends StatelessWidget {
   final String label;
   final String value;
   final Color color;
+}
+
+class _StatCard extends StatelessWidget {
+  const _StatCard({required this.data});
+
+  final _StatCardData data;
 
   @override
   Widget build(BuildContext context) {
     return _SurfaceCard(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            padding: const EdgeInsets.all(8),
+            padding: const EdgeInsets.all(6),
             decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.1),
+              color: data.color.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Icon(icon, color: color, size: 20),
+            child: Icon(data.icon, color: data.color, size: 18),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           Text(
-            value,
+            data.value,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(
-              fontSize: 30,
+              fontSize: 24,
               fontWeight: FontWeight.w800,
+              height: 1.0,
               color: Color(0xFF1E293B),
             ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 2),
           Text(
-            label,
+            data.label,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(
-              fontSize: 12,
+              fontSize: 11,
               fontWeight: FontWeight.w500,
+              height: 1.2,
               color: Color(0xFF64748B),
             ),
           ),
@@ -468,29 +473,25 @@ class _AIInsightsGrid extends StatelessWidget {
     return insightsAsync.when(
       data: (insights) {
         final cards = [
-          ('🎯', 'Productivity', insights.productivity, const Color(0xFF3B82F6)),
-          ('📅', 'Best Day', insights.bestDay, const Color(0xFF10B981)),
-          ('⏱️', 'Avg Time', insights.completionTime, const Color(0xFFF59E0B)),
-          ('🏆', 'Top Category', insights.topCategory, const Color(0xFFEC4899)),
+          _InsightCardData('🎯', 'Productivity', insights.productivity, const Color(0xFF3B82F6)),
+          _InsightCardData('📅', 'Best Day', insights.bestDay, const Color(0xFF10B981)),
+          _InsightCardData('⏱️', 'Avg Time', insights.completionTime, const Color(0xFFF59E0B)),
+          _InsightCardData('🏆', 'Top Category', insights.topCategory, const Color(0xFFEC4899)),
         ];
 
-        return GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: cards.length,
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            mainAxisSpacing: 12,
-            crossAxisSpacing: 12,
-            mainAxisExtent: 168,
-          ),
-          itemBuilder: (context, index) {
-            final card = cards[index];
-            return _AIInsightCard(
-              icon: card.$1,
-              title: card.$2,
-              content: card.$3,
-              color: card.$4,
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            final cardWidth = (constraints.maxWidth - 12) / 2;
+            return Wrap(
+              spacing: 12,
+              runSpacing: 12,
+              children: [
+                for (final card in cards)
+                  SizedBox(
+                    width: cardWidth,
+                    child: _AIInsightCard(data: card),
+                  ),
+              ],
             );
           },
         );
@@ -511,29 +512,25 @@ class _AIPredictionsGrid extends StatelessWidget {
     return predictionsAsync.when(
       data: (predictions) {
         final cards = [
-          ('📈', 'Next Week', predictions.nextWeekForecast, const Color(0xFF3B82F6)),
-          ('🧠', 'Burnout Risk', predictions.burnoutRisk, const Color(0xFFEF4444)),
-          ('📌', 'Daily Target', predictions.dailyRecommendation, const Color(0xFF10B981)),
-          ('⚡', 'Speed', predictions.completionSpeed, const Color(0xFF8B5CF6)),
+          _InsightCardData('📈', 'Next Week', predictions.nextWeekForecast, const Color(0xFF3B82F6)),
+          _InsightCardData('🧠', 'Burnout Risk', predictions.burnoutRisk, const Color(0xFFEF4444)),
+          _InsightCardData('📌', 'Daily Target', predictions.dailyRecommendation, const Color(0xFF10B981)),
+          _InsightCardData('⚡', 'Speed', predictions.completionSpeed, const Color(0xFF8B5CF6)),
         ];
 
-        return GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: cards.length,
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            mainAxisSpacing: 12,
-            crossAxisSpacing: 12,
-            mainAxisExtent: 168,
-          ),
-          itemBuilder: (context, index) {
-            final card = cards[index];
-            return _AIInsightCard(
-              icon: card.$1,
-              title: card.$2,
-              content: card.$3,
-              color: card.$4,
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            final cardWidth = (constraints.maxWidth - 12) / 2;
+            return Wrap(
+              spacing: 12,
+              runSpacing: 12,
+              children: [
+                for (final card in cards)
+                  SizedBox(
+                    width: cardWidth,
+                    child: _AIInsightCard(data: card),
+                  ),
+              ],
             );
           },
         );
@@ -544,42 +541,44 @@ class _AIPredictionsGrid extends StatelessWidget {
   }
 }
 
-class _AIInsightCard extends StatelessWidget {
-  const _AIInsightCard({
-    required this.icon,
-    required this.title,
-    required this.content,
-    required this.color,
-  });
+class _InsightCardData {
+  const _InsightCardData(this.icon, this.title, this.content, this.color);
 
   final String icon;
   final String title;
   final String content;
   final Color color;
+}
+
+class _AIInsightCard extends StatelessWidget {
+  const _AIInsightCard({required this.data});
+
+  final _InsightCardData data;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.08),
+        color: data.color.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withValues(alpha: 0.22)),
+        border: Border.all(color: data.color.withValues(alpha: 0.22)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
           Row(
             children: [
-              Text(icon, style: const TextStyle(fontSize: 22)),
-              const SizedBox(width: 8),
+              Text(data.icon, style: const TextStyle(fontSize: 20)),
+              const SizedBox(width: 6),
               Expanded(
                 child: Text(
-                  title,
+                  data.title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
-                    fontSize: 13,
+                    fontSize: 12,
                     fontWeight: FontWeight.w600,
                     color: Color(0xFF64748B),
                   ),
@@ -587,21 +586,16 @@ class _AIInsightCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 16),
-          Expanded(
-            child: Align(
-              alignment: Alignment.topLeft,
-              child: Text(
-                content,
-                maxLines: 4,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  height: 1.4,
-                  color: Color(0xFF1E293B),
-                ),
-              ),
+          const SizedBox(height: 10),
+          Text(
+            data.content,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              height: 1.3,
+              color: Color(0xFF1E293B),
             ),
           ),
         ],
