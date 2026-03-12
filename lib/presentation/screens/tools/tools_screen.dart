@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:taskflow_ai/app/router/route_names.dart';
 import 'package:taskflow_ai/core/theme/app_colors.dart';
@@ -9,8 +10,10 @@ import 'package:taskflow_ai/domain/entities/task.dart';
 import 'package:taskflow_ai/presentation/providers/life_wheel_providers.dart';
 import 'package:taskflow_ai/presentation/providers/pomodoro_provider.dart';
 import 'package:taskflow_ai/presentation/providers/task_providers.dart';
+import 'package:taskflow_ai/presentation/widgets/common/app_card.dart';
 import 'package:taskflow_ai/presentation/widgets/common/app_scaffold.dart';
 import 'package:taskflow_ai/presentation/widgets/common/async_feedback.dart';
+import 'package:taskflow_ai/presentation/widgets/common/section_title.dart';
 
 class ToolsScreen extends ConsumerWidget {
   const ToolsScreen({super.key});
@@ -53,61 +56,64 @@ class _ToolsContent extends StatelessWidget {
 
     return ListView(
       children: [
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Pomodoro', style: Theme.of(context).textTheme.titleLarge),
-                const SizedBox(height: 10),
-                Text(
-                  'A local focus timer for the demo workspace. The state is fully interactive now.',
-                  style: Theme.of(context).textTheme.bodyMedium,
-                ),
-                const SizedBox(height: 20),
-                const _PomodoroPanel(),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(child: _ToolStat(label: 'Focus block', value: '25 min')),
-                    const SizedBox(width: 12),
-                    Expanded(child: _ToolStat(label: 'Today focus', value: '$focusMinutes min')),
-                  ],
-                ),
-              ],
-            ),
+        const SectionTitle(
+          title: 'Tools',
+          subtitle: 'Focus rituals and reflective planning in one calm workspace.',
+        ).animate().fadeIn(duration: 240.ms),
+        const SizedBox(height: 18),
+        AppCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SectionTitle(
+                title: 'Pomodoro',
+                subtitle: 'Apple-clean timer, local state, no extra friction.',
+              ),
+              const SizedBox(height: 20),
+              const _PomodoroPanel(),
+              const SizedBox(height: 18),
+              Row(
+                children: [
+                  Expanded(child: _ToolStat(label: 'Focus block', value: '25 min')),
+                  const SizedBox(width: 12),
+                  Expanded(child: _ToolStat(label: 'Today focus', value: '$focusMinutes min')),
+                ],
+              ),
+            ],
           ),
-        ),
+        ).animate().fadeIn(duration: 300.ms).slideY(begin: 0.03),
         const SizedBox(height: 20),
         const _LifeWheelPanel(),
         const SizedBox(height: 20),
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Daily snapshot', style: Theme.of(context).textTheme.titleLarge),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(child: _ToolStat(label: 'Completed today', value: '$completedToday')),
-                    const SizedBox(width: 12),
-                    Expanded(child: _ToolStat(label: 'Active now', value: '$activeTasks')),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                const LinearProgressIndicator(value: 0.62, minHeight: 10),
-                const SizedBox(height: 10),
-                Text(
-                  'Demo progress score: 62%. This area can later host Pomodoro history and life-wheel shortcuts.',
-                  style: Theme.of(context).textTheme.bodyMedium,
-                ),
-              ],
-            ),
+        AppCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SectionTitle(
+                title: 'Daily snapshot',
+                subtitle: 'A quiet operational view for the day.',
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(child: _ToolStat(label: 'Completed today', value: '$completedToday')),
+                  const SizedBox(width: 12),
+                  Expanded(child: _ToolStat(label: 'Active now', value: '$activeTasks')),
+                ],
+              ),
+              const SizedBox(height: 14),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(999),
+                child: const LinearProgressIndicator(value: 0.62, minHeight: 10),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                'Demo progress score: 62%. This area can later host Pomodoro history and life-wheel shortcuts.',
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+            ],
           ),
-        ),
+        ).animate().fadeIn(duration: 340.ms),
       ],
     );
   }
@@ -119,31 +125,53 @@ class _LifeWheelPanel extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final categories = ref.watch(lifeWheelProvider);
-    final analysisAsync = ref.watch(lifeWheelAnalysisProvider);
+    final trigger = ref.watch(lifeWheelAnalysisTriggerProvider);
+    final analysisAsync = trigger == 0
+        ? null
+        : ref.watch(lifeWheelAnalysisProvider);
 
     return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(20),
+      child: AppCard(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Life Wheel', style: Theme.of(context).textTheme.titleLarge),
-            const SizedBox(height: 10),
-            Text(
-              'Tune the sliders to reflect your current balance, then use AI analysis on top of the wheel.',
-              style: Theme.of(context).textTheme.bodyMedium,
+            const SectionTitle(
+              title: 'Life Wheel',
+              subtitle:
+                  'Notion-like sliders with a reflective AI analysis on demand.',
             ),
             const SizedBox(height: 20),
             Center(
               child: SizedBox(
-                width: 300,
-                height: 300,
+                width: 320,
+                height: 320,
                 child: CustomPaint(
                   painter: _LifeWheelPainter(categories: categories),
                 ),
               ),
             ),
             const SizedBox(height: 20),
+            _AddCategoryRow(
+              count: categories.length,
+              onAdd: (label) {
+                final added =
+                    ref.read(lifeWheelProvider.notifier).addCategory(label);
+                final messenger = ScaffoldMessenger.of(context);
+                messenger.hideCurrentSnackBar();
+                messenger.showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      added
+                          ? 'Category added'
+                          : categories.length >= 10
+                              ? 'Maximum is 10 categories'
+                              : 'Category already exists or is invalid',
+                    ),
+                  ),
+                );
+              },
+            ),
+            const SizedBox(height: 16),
             for (final category in categories)
               Padding(
                 padding: const EdgeInsets.only(bottom: 14),
@@ -163,6 +191,25 @@ class _LifeWheelPanel extends ConsumerWidget {
                         const SizedBox(width: 10),
                         Expanded(child: Text(category.label)),
                         Text(category.score.toStringAsFixed(1)),
+                        if (category.isCustom) ...[
+                          const SizedBox(width: 8),
+                          IconButton(
+                            tooltip: 'Remove category',
+                            onPressed: () {
+                              final removed = ref
+                                  .read(lifeWheelProvider.notifier)
+                                  .removeCategory(category.key);
+                              if (!removed) return;
+                              final messenger = ScaffoldMessenger.of(context);
+                              messenger.hideCurrentSnackBar();
+                              messenger.showSnackBar(
+                                const SnackBar(content: Text('Category removed')),
+                              );
+                            },
+                            icon: const Icon(Icons.close),
+                            visualDensity: VisualDensity.compact,
+                          ),
+                        ],
                       ],
                     ),
                     Slider(
@@ -178,8 +225,26 @@ class _LifeWheelPanel extends ConsumerWidget {
                   ],
                 ),
               ),
-            analysisAsync.when(
-              data: (analysis) => Container(
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                FilledButton.icon(
+                  onPressed: () {
+                    ref.read(lifeWheelAnalysisTriggerProvider.notifier).state++;
+                  },
+                  icon: const Icon(Icons.auto_awesome),
+                  label: const Text('Analyze wheel'),
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  '${categories.length}/10 categories',
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            if (analysisAsync == null)
+              Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(18),
                 decoration: BoxDecoration(
@@ -187,24 +252,39 @@ class _LifeWheelPanel extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(18),
                   border: Border.all(color: AppColors.border),
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('AI analysis', style: Theme.of(context).textTheme.titleMedium),
-                    const SizedBox(height: 12),
-                    _LifeWheelInsight(label: 'Summary', value: analysis.summary),
-                    _LifeWheelInsight(label: 'Focus area', value: analysis.focusArea),
-                    _LifeWheelInsight(label: 'Encouragement', value: analysis.encouragement),
-                    _LifeWheelInsight(label: 'Next step', value: analysis.nextStep),
-                  ],
+                child: Text(
+                  'Adjust the wheel and tap "Analyze wheel" when you want AI feedback.',
+                  style: Theme.of(context).textTheme.bodyMedium,
                 ),
               ),
-              loading: () => const Padding(
-                padding: EdgeInsets.symmetric(vertical: 8),
-                child: LinearProgressIndicator(),
+            if (analysisAsync != null)
+              analysisAsync.when(
+                data: (analysis) => Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(18),
+                  decoration: BoxDecoration(
+                    color: AppColors.background,
+                    borderRadius: BorderRadius.circular(18),
+                    border: Border.all(color: AppColors.border),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('AI analysis', style: Theme.of(context).textTheme.titleMedium),
+                      const SizedBox(height: 12),
+                      _LifeWheelInsight(label: 'Summary', value: analysis.summary),
+                      _LifeWheelInsight(label: 'Focus area', value: analysis.focusArea),
+                      _LifeWheelInsight(label: 'Encouragement', value: analysis.encouragement),
+                      _LifeWheelInsight(label: 'Next step', value: analysis.nextStep),
+                    ],
+                  ),
+                ),
+                loading: () => const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 8),
+                  child: LinearProgressIndicator(),
+                ),
+                error: (error, _) => Text(error.toString()),
               ),
-              error: (error, _) => Text(error.toString()),
-            ),
           ],
         ),
       ),
@@ -244,10 +324,13 @@ class _PomodoroPanel extends ConsumerWidget {
                 children: [
                   Text(
                     timer.formattedTime,
-                    style: Theme.of(context).textTheme.headlineMedium,
+                    style: Theme.of(context).textTheme.displaySmall,
                   ),
                   const SizedBox(height: 8),
-                  Text(modeLabel(timer.mode)),
+                  Text(
+                    modeLabel(timer.mode),
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
                 ],
               ),
             ),
@@ -338,8 +421,9 @@ class _LifeWheelPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
+    if (categories.isEmpty) return;
     final center = Offset(size.width / 2, size.height / 2);
-    final radius = size.width / 2 - 26;
+    final radius = size.width / 2 - 40;
     final segmentAngle = 6.2831 / categories.length;
 
     final gridPaint = Paint()
@@ -381,8 +465,8 @@ class _LifeWheelPainter extends CustomPainter {
 
       final labelAngle = startAngle + sweepAngle / 2;
       final labelOffset = Offset(
-        center.dx + (radius + 18) * cos(labelAngle),
-        center.dy + (radius + 18) * sin(labelAngle),
+        center.dx + (radius + 24) * cos(labelAngle),
+        center.dy + (radius + 24) * sin(labelAngle),
       );
 
       final textPainter = TextPainter(
@@ -410,6 +494,59 @@ class _LifeWheelPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant _LifeWheelPainter oldDelegate) {
     return oldDelegate.categories != categories;
+  }
+}
+
+class _AddCategoryRow extends StatefulWidget {
+  const _AddCategoryRow({
+    required this.count,
+    required this.onAdd,
+  });
+
+  final int count;
+  final ValueChanged<String> onAdd;
+
+  @override
+  State<_AddCategoryRow> createState() => _AddCategoryRowState();
+}
+
+class _AddCategoryRowState extends State<_AddCategoryRow> {
+  final _controller = TextEditingController();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isMax = widget.count >= 10;
+    return Row(
+      children: [
+        Expanded(
+          child: TextField(
+            controller: _controller,
+            enabled: !isMax,
+            decoration: InputDecoration(
+              labelText: 'Add custom category',
+              hintText: isMax ? 'Maximum reached' : 'Example: Spirituality',
+            ),
+          ),
+        ),
+        const SizedBox(width: 12),
+        FilledButton(
+          onPressed: isMax
+              ? null
+              : () {
+                  final value = _controller.text.trim();
+                  widget.onAdd(value);
+                  _controller.clear();
+                },
+          child: const Text('Add'),
+        ),
+      ],
+    );
   }
 }
 
@@ -457,7 +594,9 @@ class _ToolStat extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
-        color: Theme.of(context).colorScheme.surface,
+        color: Theme.of(context).brightness == Brightness.dark
+            ? AppColors.darkCardMuted
+            : AppColors.cardMuted,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

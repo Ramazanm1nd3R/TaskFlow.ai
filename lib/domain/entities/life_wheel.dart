@@ -6,24 +6,48 @@ class LifeWheelCategory {
     required this.label,
     required this.color,
     required this.score,
+    required this.isCustom,
   });
 
   final String key;
   final String label;
   final Color color;
   final double score;
+  final bool isCustom;
 
   LifeWheelCategory copyWith({
     String? key,
     String? label,
     Color? color,
     double? score,
+    bool? isCustom,
   }) {
     return LifeWheelCategory(
       key: key ?? this.key,
       label: label ?? this.label,
       color: color ?? this.color,
       score: score ?? this.score,
+      isCustom: isCustom ?? this.isCustom,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'key': key,
+      'label': label,
+      'color': color.toARGB32(),
+      'score': score,
+      'isCustom': isCustom,
+    };
+  }
+
+  factory LifeWheelCategory.fromJson(Map<String, dynamic> json) {
+    return LifeWheelCategory(
+      key: json['key'] as String,
+      label: json['label'] as String,
+      color: Color(json['color'] as int),
+      score: (json['score'] as num).toDouble(),
+      isCustom: json['isCustom'] as bool? ?? false,
     );
   }
 }

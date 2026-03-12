@@ -29,7 +29,10 @@ class AppScaffold extends StatelessWidget {
     final currentIndex = destinations.indexWhere((item) => item.route == currentRoute);
 
     return Scaffold(
-      appBar: AppBar(title: Text(title), actions: actions),
+      appBar: AppBar(
+        title: Text(title),
+        actions: actions,
+      ),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
@@ -38,6 +41,7 @@ class AppScaffold extends StatelessWidget {
       ),
       floatingActionButton: floatingActionButton,
       bottomNavigationBar: NavigationBar(
+        elevation: 0,
         selectedIndex: currentIndex < 0 ? 0 : currentIndex,
         destinations: [
           for (final destination in destinations)
@@ -49,7 +53,7 @@ class AppScaffold extends StatelessWidget {
         onDestinationSelected: (index) {
           final route = destinations[index].route;
           if (route != currentRoute) {
-            context.go(route);
+            context.go(route, extra: currentIndex < 0 ? 0 : currentIndex);
           }
         },
       ),
