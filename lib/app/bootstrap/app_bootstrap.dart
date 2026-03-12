@@ -13,6 +13,7 @@ class AppBootstrap {
     await Hive.openBox<String>(HiveBoxes.aiInsights);
     await Hive.openBox<String>(HiveBoxes.aiPredictions);
     await Hive.openBox<String>(HiveBoxes.aiLifeWheel);
+    await Hive.openBox<String>(HiveBoxes.lifeWheelState);
     if (AppConfig.openAiKey.isNotEmpty) {
       OpenAI.apiKey = AppConfig.openAiKey;
       OpenAI.showLogs = false;

@@ -187,6 +187,25 @@ class _LifeWheelPanel extends ConsumerWidget {
                         const SizedBox(width: 10),
                         Expanded(child: Text(category.label)),
                         Text(category.score.toStringAsFixed(1)),
+                        if (category.isCustom) ...[
+                          const SizedBox(width: 8),
+                          IconButton(
+                            tooltip: 'Remove category',
+                            onPressed: () {
+                              final removed = ref
+                                  .read(lifeWheelProvider.notifier)
+                                  .removeCategory(category.key);
+                              if (!removed) return;
+                              final messenger = ScaffoldMessenger.of(context);
+                              messenger.hideCurrentSnackBar();
+                              messenger.showSnackBar(
+                                const SnackBar(content: Text('Category removed')),
+                              );
+                            },
+                            icon: const Icon(Icons.close),
+                            visualDensity: VisualDensity.compact,
+                          ),
+                        ],
                       ],
                     ),
                     Slider(
