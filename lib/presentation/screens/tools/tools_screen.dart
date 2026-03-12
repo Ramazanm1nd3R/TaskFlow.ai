@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:taskflow_ai/app/router/route_names.dart';
 import 'package:taskflow_ai/core/theme/app_colors.dart';
@@ -9,8 +10,10 @@ import 'package:taskflow_ai/domain/entities/task.dart';
 import 'package:taskflow_ai/presentation/providers/life_wheel_providers.dart';
 import 'package:taskflow_ai/presentation/providers/pomodoro_provider.dart';
 import 'package:taskflow_ai/presentation/providers/task_providers.dart';
+import 'package:taskflow_ai/presentation/widgets/common/app_card.dart';
 import 'package:taskflow_ai/presentation/widgets/common/app_scaffold.dart';
 import 'package:taskflow_ai/presentation/widgets/common/async_feedback.dart';
+import 'package:taskflow_ai/presentation/widgets/common/section_title.dart';
 
 class ToolsScreen extends ConsumerWidget {
   const ToolsScreen({super.key});
@@ -53,61 +56,64 @@ class _ToolsContent extends StatelessWidget {
 
     return ListView(
       children: [
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Pomodoro', style: Theme.of(context).textTheme.titleLarge),
-                const SizedBox(height: 10),
-                Text(
-                  'A local focus timer for the demo workspace. The state is fully interactive now.',
-                  style: Theme.of(context).textTheme.bodyMedium,
-                ),
-                const SizedBox(height: 20),
-                const _PomodoroPanel(),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(child: _ToolStat(label: 'Focus block', value: '25 min')),
-                    const SizedBox(width: 12),
-                    Expanded(child: _ToolStat(label: 'Today focus', value: '$focusMinutes min')),
-                  ],
-                ),
-              ],
-            ),
+        const SectionTitle(
+          title: 'Tools',
+          subtitle: 'Focus rituals and reflective planning in one calm workspace.',
+        ).animate().fadeIn(duration: 240.ms),
+        const SizedBox(height: 18),
+        AppCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SectionTitle(
+                title: 'Pomodoro',
+                subtitle: 'Apple-clean timer, local state, no extra friction.',
+              ),
+              const SizedBox(height: 20),
+              const _PomodoroPanel(),
+              const SizedBox(height: 18),
+              Row(
+                children: [
+                  Expanded(child: _ToolStat(label: 'Focus block', value: '25 min')),
+                  const SizedBox(width: 12),
+                  Expanded(child: _ToolStat(label: 'Today focus', value: '$focusMinutes min')),
+                ],
+              ),
+            ],
           ),
-        ),
+        ).animate().fadeIn(duration: 300.ms).slideY(begin: 0.03),
         const SizedBox(height: 20),
         const _LifeWheelPanel(),
         const SizedBox(height: 20),
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Daily snapshot', style: Theme.of(context).textTheme.titleLarge),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(child: _ToolStat(label: 'Completed today', value: '$completedToday')),
-                    const SizedBox(width: 12),
-                    Expanded(child: _ToolStat(label: 'Active now', value: '$activeTasks')),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                const LinearProgressIndicator(value: 0.62, minHeight: 10),
-                const SizedBox(height: 10),
-                Text(
-                  'Demo progress score: 62%. This area can later host Pomodoro history and life-wheel shortcuts.',
-                  style: Theme.of(context).textTheme.bodyMedium,
-                ),
-              ],
-            ),
+        AppCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SectionTitle(
+                title: 'Daily snapshot',
+                subtitle: 'A quiet operational view for the day.',
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(child: _ToolStat(label: 'Completed today', value: '$completedToday')),
+                  const SizedBox(width: 12),
+                  Expanded(child: _ToolStat(label: 'Active now', value: '$activeTasks')),
+                ],
+              ),
+              const SizedBox(height: 14),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(999),
+                child: const LinearProgressIndicator(value: 0.62, minHeight: 10),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                'Demo progress score: 62%. This area can later host Pomodoro history and life-wheel shortcuts.',
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+            ],
           ),
-        ),
+        ).animate().fadeIn(duration: 340.ms),
       ],
     );
   }
@@ -125,16 +131,14 @@ class _LifeWheelPanel extends ConsumerWidget {
         : ref.watch(lifeWheelAnalysisProvider);
 
     return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(20),
+      child: AppCard(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Life Wheel', style: Theme.of(context).textTheme.titleLarge),
-            const SizedBox(height: 10),
-            Text(
-              'Tune the sliders to reflect your current balance, then use AI analysis on top of the wheel.',
-              style: Theme.of(context).textTheme.bodyMedium,
+            const SectionTitle(
+              title: 'Life Wheel',
+              subtitle:
+                  'Notion-like sliders with a reflective AI analysis on demand.',
             ),
             const SizedBox(height: 20),
             Center(
@@ -320,10 +324,13 @@ class _PomodoroPanel extends ConsumerWidget {
                 children: [
                   Text(
                     timer.formattedTime,
-                    style: Theme.of(context).textTheme.headlineMedium,
+                    style: Theme.of(context).textTheme.displaySmall,
                   ),
                   const SizedBox(height: 8),
-                  Text(modeLabel(timer.mode)),
+                  Text(
+                    modeLabel(timer.mode),
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
                 ],
               ),
             ),
@@ -587,7 +594,9 @@ class _ToolStat extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
-        color: Theme.of(context).colorScheme.surface,
+        color: Theme.of(context).brightness == Brightness.dark
+            ? AppColors.darkCardMuted
+            : AppColors.cardMuted,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

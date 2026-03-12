@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:taskflow_ai/app/router/route_names.dart';
 import 'package:taskflow_ai/core/theme/app_colors.dart';
 import 'package:taskflow_ai/domain/entities/task.dart';
 import 'package:taskflow_ai/presentation/providers/auth_providers.dart';
 import 'package:taskflow_ai/presentation/providers/task_providers.dart';
+import 'package:taskflow_ai/presentation/widgets/common/app_card.dart';
 import 'package:taskflow_ai/presentation/widgets/common/app_scaffold.dart';
 import 'package:taskflow_ai/presentation/widgets/common/async_feedback.dart';
+import 'package:taskflow_ai/presentation/widgets/common/section_title.dart';
+import 'package:taskflow_ai/presentation/widgets/common/task_tile.dart';
 import 'package:taskflow_ai/presentation/widgets/dashboard/task_composer_sheet.dart';
 import 'package:taskflow_ai/presentation/widgets/dashboard/task_editor_sheet.dart';
 
@@ -25,12 +29,7 @@ class DashboardScreen extends ConsumerWidget {
       actions: [
         Padding(
           padding: const EdgeInsets.only(right: 16),
-          child: Center(
-            child: Text(
-              'Demo Mode',
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
-          ),
+          child: Center(child: Text('Demo', style: Theme.of(context).textTheme.bodySmall)),
         ),
       ],
       floatingActionButton: user == null
@@ -43,61 +42,40 @@ class DashboardScreen extends ConsumerWidget {
                   builder: (_) => const TaskComposerSheet(),
                 );
               },
-              label: const Text('New task'),
+              label: const Text('New'),
               icon: const Icon(Icons.add),
             ),
       child: user == null
           ? const LoadingPane(label: 'Checking session...')
-          : Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(24),
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFFE8F3FF), Color(0xFFF5F9FF)],
-                    ),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Hi, ${user.firstName}', style: Theme.of(context).textTheme.headlineMedium),
-                      const SizedBox(height: 8),
-                      Text(
-                        'App starts directly with a local demo account and seeded dashboard data.',
-                        style: Theme.of(context).textTheme.bodyMedium,
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 20),
-                Expanded(
-                  child: tasksState.when(
-                    data: (tasks) => _DashboardContent(tasks: tasks),
-                    loading: () => const LoadingPane(label: 'Loading tasks...'),
-                    error: (error, _) => ErrorPane(
-                      message: error.toString(),
-                      onRetry: () => ref.read(tasksControllerProvider.notifier).refresh(),
-                    ),
-                  ),
-                ),
-              ],
+          : tasksState.when(
+              data: (tasks) => _DashboardContent(
+                userName: user.firstName,
+                tasks: tasks,
+              ),
+              loading: () => const LoadingPane(label: 'Loading tasks...'),
+              error: (error, _) => ErrorPane(
+                message: error.toString(),
+                onRetry: () => ref.read(tasksControllerProvider.notifier).refresh(),
+              ),
             ),
     );
   }
 }
 
 class _DashboardContent extends ConsumerWidget {
-  const _DashboardContent({required this.tasks});
+  const _DashboardContent({
+    required this.userName,
+    required this.tasks,
+  });
 
+  final String userName;
   final List<Task> tasks;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final completed = tasks.where((task) => task.isCompleted).length;
     final active = tasks.length - completed;
+    final today = active > 0 ? active : tasks.length;
     final search = ref.watch(taskSearchProvider);
     final filter = ref.watch(taskFilterProvider);
     final category = ref.watch(taskCategoryProvider);
@@ -118,106 +96,82 @@ class _DashboardContent extends ConsumerWidget {
       return matchesSearch && matchesFilter && matchesCategory;
     }).toList();
 
-    return CustomScrollView(
-      slivers: [
-        SliverToBoxAdapter(
-          child: Row(
+    return ListView(
+      children: [
+        Text(
+          'Good morning',
+          style: Theme.of(context).textTheme.bodyMedium,
+        ).animate().fadeIn(duration: 240.ms),
+        const SizedBox(height: 6),
+        Text(
+          userName,
+          style: Theme.of(context).textTheme.displaySmall,
+        ).animate().fadeIn(duration: 260.ms).slideY(begin: 0.06),
+        const SizedBox(height: 8),
+        Text(
+          'You have $today tasks in motion today.',
+          style: Theme.of(context).textTheme.bodyLarge,
+        ).animate().fadeIn(duration: 300.ms),
+        const SizedBox(height: 20),
+        AppCard(
+          child: Column(
             children: [
-              Expanded(child: _StatCard(label: 'Total', value: '${tasks.length}')),
-              const SizedBox(width: 12),
-              Expanded(child: _StatCard(label: 'Active', value: '$active')),
-              const SizedBox(width: 12),
-              Expanded(child: _StatCard(label: 'Done', value: '$completed')),
+              const SectionTitle(
+                title: 'Overview',
+                subtitle: 'Calm, minimal daily snapshot',
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(child: _StatCard(label: 'Today', value: '$today')),
+                  const SizedBox(width: 12),
+                  Expanded(child: _StatCard(label: 'Done', value: '$completed')),
+                  const SizedBox(width: 12),
+                  Expanded(child: _StatCard(label: 'Open', value: '$active')),
+                ],
+              ),
             ],
           ),
-        ),
-        const SliverToBoxAdapter(child: SizedBox(height: 20)),
-        SliverToBoxAdapter(
+        ).animate().fadeIn(duration: 320.ms).slideY(begin: 0.03),
+        const SizedBox(height: 18),
+        AppCard(
           child: _FilterBar(
             categories: categories,
             selectedFilter: filter,
             selectedCategory: category,
           ),
+        ).animate().fadeIn(duration: 340.ms),
+        const SizedBox(height: 18),
+        SectionTitle(
+          title: 'Tasks',
+          subtitle: visibleTasks.isEmpty
+              ? 'No tasks match the current view'
+              : '${visibleTasks.length} items in this view',
         ),
-        const SliverToBoxAdapter(child: SizedBox(height: 16)),
+        const SizedBox(height: 12),
         if (visibleTasks.isEmpty)
-          const SliverFillRemaining(
-            hasScrollBody: false,
-            child: Center(child: Text('No tasks match current filters.')),
+          const AppCard(
+            child: Padding(
+              padding: EdgeInsets.symmetric(vertical: 24),
+              child: Center(child: Text('No tasks match current filters.')),
+            ),
           )
         else
-          SliverList.builder(
-            itemCount: visibleTasks.length,
-            itemBuilder: (context, index) {
-              final task = visibleTasks[index];
-              return Card(
-                margin: const EdgeInsets.only(bottom: 12),
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    children: [
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(task.title,
-                                    style: Theme.of(context).textTheme.titleMedium),
-                                const SizedBox(height: 6),
-                                Text('${task.category} • ${task.priority.name}'),
-                              ],
-                            ),
-                          ),
-                          Chip(
-                            label: Text(task.status.name),
-                            backgroundColor: task.isCompleted
-                                ? AppColors.success.withValues(alpha: 0.12)
-                                : AppColors.warning.withValues(alpha: 0.12),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      Row(
-                        children: [
-                          OutlinedButton.icon(
-                            onPressed: () => ref
-                                .read(tasksControllerProvider.notifier)
-                                .toggleStatus(task.id),
-                            icon: Icon(task.isCompleted
-                                ? Icons.radio_button_unchecked
-                                : Icons.check_circle_outline),
-                            label: Text(task.isCompleted ? 'Reopen' : 'Complete'),
-                          ),
-                          const SizedBox(width: 8),
-                          OutlinedButton.icon(
-                            onPressed: () {
-                              showModalBottomSheet<void>(
-                                context: context,
-                                isScrollControlled: true,
-                                builder: (_) => TaskEditorSheet(initialTask: task),
-                              );
-                            },
-                            icon: const Icon(Icons.edit_outlined),
-                            label: const Text('Edit'),
-                          ),
-                          const Spacer(),
-                          IconButton(
-                            onPressed: () => ref
-                                .read(tasksControllerProvider.notifier)
-                                .deleteTask(task.id),
-                            icon: const Icon(Icons.delete_outline),
-                            color: AppColors.danger,
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            },
-          ),
+          for (final task in visibleTasks)
+            TaskTile(
+              task: task,
+              onToggle: () =>
+                  ref.read(tasksControllerProvider.notifier).toggleStatus(task.id),
+              onEdit: () {
+                showModalBottomSheet<void>(
+                  context: context,
+                  isScrollControlled: true,
+                  builder: (_) => TaskEditorSheet(initialTask: task),
+                );
+              },
+              onDelete: () =>
+                  ref.read(tasksControllerProvider.notifier).deleteTask(task.id),
+            ),
       ],
     );
   }
@@ -294,17 +248,19 @@ class _StatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(label, style: Theme.of(context).textTheme.bodyMedium),
-            const SizedBox(height: 8),
-            Text(value, style: Theme.of(context).textTheme.titleLarge),
-          ],
-        ),
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppColors.cardMuted,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label, style: Theme.of(context).textTheme.bodySmall),
+          const SizedBox(height: 10),
+          Text(value, style: Theme.of(context).textTheme.titleLarge),
+        ],
       ),
     );
   }
