@@ -29,7 +29,8 @@ class ProfileScreen extends ConsumerWidget {
               loading: () => const LoadingPane(label: 'Loading profile...'),
               error: (error, _) => ErrorPane(
                 message: error.toString(),
-                onRetry: () => ref.read(tasksControllerProvider.notifier).refresh(),
+                onRetry: () =>
+                    ref.read(tasksControllerProvider.notifier).refresh(),
               ),
             ),
     );
@@ -37,16 +38,14 @@ class ProfileScreen extends ConsumerWidget {
 }
 
 class _ProfileContent extends StatelessWidget {
-  const _ProfileContent({
-    required this.user,
-    required this.tasks,
-  });
+  const _ProfileContent({required this.user, required this.tasks});
 
   final dynamic user;
   final List<dynamic> tasks;
 
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
     final total = tasks.length;
     final completed = tasks.where((task) => task.isCompleted).length;
     final active = total - completed;
@@ -74,10 +73,21 @@ class _ProfileContent extends StatelessWidget {
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(user.fullName, style: Theme.of(context).textTheme.titleLarge),
+                    Text(
+                      user.fullName,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: textTheme.titleLarge,
+                    ),
                     const SizedBox(height: 4),
-                    Text(user.email, style: Theme.of(context).textTheme.bodyMedium),
+                    Text(
+                      user.email,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: textTheme.bodyMedium,
+                    ),
                     const SizedBox(height: 10),
                     const Chip(label: Text('Demo account')),
                   ],
@@ -87,19 +97,21 @@ class _ProfileContent extends StatelessWidget {
           ),
         ).animate().fadeIn(duration: 280.ms).slideY(begin: 0.04),
         const SizedBox(height: 20),
-        Row(
+        Wrap(
+          spacing: 12,
+          runSpacing: 12,
           children: [
-            Expanded(child: _ProfileStat(label: 'Tasks', value: '$total')),
-            const SizedBox(width: 12),
-            Expanded(child: _ProfileStat(label: 'Done', value: '$completed')),
+            _ProfileStat(label: 'Tasks', value: '$total'),
+            _ProfileStat(label: 'Done', value: '$completed'),
           ],
         ),
         const SizedBox(height: 12),
-        Row(
+        Wrap(
+          spacing: 12,
+          runSpacing: 12,
           children: [
-            Expanded(child: _ProfileStat(label: 'Active', value: '$active')),
-            const SizedBox(width: 12),
-            Expanded(child: _ProfileStat(label: 'Focus hours', value: '$focusHours')),
+            _ProfileStat(label: 'Active', value: '$active'),
+            _ProfileStat(label: 'Focus hours', value: '$focusHours'),
           ],
         ),
         const SizedBox(height: 20),
@@ -107,7 +119,10 @@ class _ProfileContent extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SectionTitle(title: 'Settings', subtitle: 'Notion-simple, Apple-clean'),
+              const SectionTitle(
+                title: 'Settings',
+                subtitle: 'Notion-simple, Apple-clean',
+              ),
               const SizedBox(height: 8),
               _SettingTile(
                 icon: Icons.palette_outlined,
@@ -132,11 +147,16 @@ class _ProfileContent extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SectionTitle(title: 'About', subtitle: 'Current workspace state'),
+              const SectionTitle(
+                title: 'About',
+                subtitle: 'Current workspace state',
+              ),
               const SizedBox(height: 8),
               Text(
                 'This screen keeps the existing state model intact and only reshapes the experience into a more native iOS settings layout.',
-                style: Theme.of(context).textTheme.bodyMedium,
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
+                style: textTheme.bodyMedium,
               ),
             ],
           ),
@@ -154,15 +174,29 @@ class _ProfileStat extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AppCard(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(value, style: Theme.of(context).textTheme.titleLarge),
-          const SizedBox(height: 6),
-          Text(label, style: Theme.of(context).textTheme.bodyMedium),
-        ],
+    final textTheme = Theme.of(context).textTheme;
+    return SizedBox(
+      width: 160,
+      child: AppCard(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text(value, style: textTheme.titleLarge),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              label,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: textTheme.bodyMedium,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -191,9 +225,12 @@ class _SettingTile extends StatelessWidget {
         ),
         child: Icon(icon, size: 18),
       ),
-      title: Text(title),
-      subtitle: Text(subtitle),
-      trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.textTertiary),
+      title: Text(title, maxLines: 1, overflow: TextOverflow.ellipsis),
+      subtitle: Text(subtitle, maxLines: 1, overflow: TextOverflow.ellipsis),
+      trailing: const Icon(
+        Icons.chevron_right_rounded,
+        color: AppColors.textTertiary,
+      ),
     );
   }
 }

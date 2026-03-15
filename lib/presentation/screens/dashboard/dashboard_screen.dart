@@ -29,7 +29,9 @@ class DashboardScreen extends ConsumerWidget {
       actions: [
         Padding(
           padding: const EdgeInsets.only(right: 16),
-          child: Center(child: Text('Demo', style: Theme.of(context).textTheme.bodySmall)),
+          child: Center(
+            child: Text('Demo', style: Theme.of(context).textTheme.bodySmall),
+          ),
         ),
       ],
       floatingActionButton: user == null
@@ -48,14 +50,13 @@ class DashboardScreen extends ConsumerWidget {
       child: user == null
           ? const LoadingPane(label: 'Checking session...')
           : tasksState.when(
-              data: (tasks) => _DashboardContent(
-                userName: user.firstName,
-                tasks: tasks,
-              ),
+              data: (tasks) =>
+                  _DashboardContent(userName: user.firstName, tasks: tasks),
               loading: () => const LoadingPane(label: 'Loading tasks...'),
               error: (error, _) => ErrorPane(
                 message: error.toString(),
-                onRetry: () => ref.read(tasksControllerProvider.notifier).refresh(),
+                onRetry: () =>
+                    ref.read(tasksControllerProvider.notifier).refresh(),
               ),
             ),
     );
@@ -63,16 +64,14 @@ class DashboardScreen extends ConsumerWidget {
 }
 
 class _DashboardContent extends ConsumerWidget {
-  const _DashboardContent({
-    required this.userName,
-    required this.tasks,
-  });
+  const _DashboardContent({required this.userName, required this.tasks});
 
   final String userName;
   final List<Task> tasks;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final textTheme = Theme.of(context).textTheme;
     final completed = tasks.where((task) => task.isCompleted).length;
     final active = tasks.length - completed;
     final today = active > 0 ? active : tasks.length;
@@ -82,10 +81,10 @@ class _DashboardContent extends ConsumerWidget {
     final categories = <String>{
       'all',
       ...tasks.map((task) => task.category).where((value) => value.isNotEmpty),
-    }.toList()
-      ..sort();
+    }.toList()..sort();
     final visibleTasks = tasks.where((task) {
-      final matchesSearch = search.isEmpty ||
+      final matchesSearch =
+          search.isEmpty ||
           task.title.toLowerCase().contains(search.toLowerCase());
       final matchesFilter = switch (filter) {
         TaskListFilter.all => true,
@@ -100,17 +99,23 @@ class _DashboardContent extends ConsumerWidget {
       children: [
         Text(
           'Good morning',
-          style: Theme.of(context).textTheme.bodyMedium,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: textTheme.bodyMedium,
         ).animate().fadeIn(duration: 240.ms),
         const SizedBox(height: 6),
         Text(
           userName,
-          style: Theme.of(context).textTheme.displaySmall,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: textTheme.displaySmall,
         ).animate().fadeIn(duration: 260.ms).slideY(begin: 0.06),
         const SizedBox(height: 8),
         Text(
           'You have $today tasks in motion today.',
-          style: Theme.of(context).textTheme.bodyLarge,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          style: textTheme.bodyLarge,
         ).animate().fadeIn(duration: 300.ms),
         const SizedBox(height: 20),
         AppCard(
@@ -123,11 +128,17 @@ class _DashboardContent extends ConsumerWidget {
               const SizedBox(height: 16),
               Row(
                 children: [
-                  Expanded(child: _StatCard(label: 'Today', value: '$today')),
+                  Expanded(
+                    child: _StatCard(label: 'Today', value: '$today'),
+                  ),
                   const SizedBox(width: 12),
-                  Expanded(child: _StatCard(label: 'Done', value: '$completed')),
+                  Expanded(
+                    child: _StatCard(label: 'Done', value: '$completed'),
+                  ),
                   const SizedBox(width: 12),
-                  Expanded(child: _StatCard(label: 'Open', value: '$active')),
+                  Expanded(
+                    child: _StatCard(label: 'Open', value: '$active'),
+                  ),
                 ],
               ),
             ],
@@ -150,18 +161,27 @@ class _DashboardContent extends ConsumerWidget {
         ),
         const SizedBox(height: 12),
         if (visibleTasks.isEmpty)
-          const AppCard(
-            child: Padding(
-              padding: EdgeInsets.symmetric(vertical: 24),
-              child: Center(child: Text('No tasks match current filters.')),
+          AppCard(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minHeight: 160),
+              child: Center(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+                  child: Text(
+                    'No tasks match current filters.',
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
             ),
           )
         else
           for (final task in visibleTasks)
             TaskTile(
               task: task,
-              onToggle: () =>
-                  ref.read(tasksControllerProvider.notifier).toggleStatus(task.id),
+              onToggle: () => ref
+                  .read(tasksControllerProvider.notifier)
+                  .toggleStatus(task.id),
               onEdit: () {
                 showModalBottomSheet<void>(
                   context: context,
@@ -169,8 +189,9 @@ class _DashboardContent extends ConsumerWidget {
                   builder: (_) => TaskEditorSheet(initialTask: task),
                 );
               },
-              onDelete: () =>
-                  ref.read(tasksControllerProvider.notifier).deleteTask(task.id),
+              onDelete: () => ref
+                  .read(tasksControllerProvider.notifier)
+                  .deleteTask(task.id),
             ),
       ],
     );
@@ -191,12 +212,17 @@ class _FilterBar extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        TextField(
-          onChanged: (value) => ref.read(taskSearchProvider.notifier).state = value,
-          decoration: const InputDecoration(
-            hintText: 'Search tasks',
-            prefixIcon: Icon(Icons.search),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4),
+          child: TextField(
+            onChanged: (value) =>
+                ref.read(taskSearchProvider.notifier).state = value,
+            decoration: const InputDecoration(
+              hintText: 'Search tasks',
+              prefixIcon: Icon(Icons.search),
+            ),
           ),
         ),
         const SizedBox(height: 12),
@@ -206,8 +232,14 @@ class _FilterBar extends ConsumerWidget {
               child: SegmentedButton<TaskListFilter>(
                 segments: const [
                   ButtonSegment(value: TaskListFilter.all, label: Text('All')),
-                  ButtonSegment(value: TaskListFilter.active, label: Text('Active')),
-                  ButtonSegment(value: TaskListFilter.completed, label: Text('Done')),
+                  ButtonSegment(
+                    value: TaskListFilter.active,
+                    label: Text('Active'),
+                  ),
+                  ButtonSegment(
+                    value: TaskListFilter.completed,
+                    label: Text('Done'),
+                  ),
                 ],
                 selected: {selectedFilter},
                 onSelectionChanged: (selection) {
@@ -248,6 +280,7 @@ class _StatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -256,10 +289,20 @@ class _StatCard extends StatelessWidget {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Text(label, style: Theme.of(context).textTheme.bodySmall),
+          Text(
+            label,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: textTheme.bodySmall,
+          ),
           const SizedBox(height: 10),
-          Text(value, style: Theme.of(context).textTheme.titleLarge),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(value, style: textTheme.titleLarge),
+          ),
         ],
       ),
     );

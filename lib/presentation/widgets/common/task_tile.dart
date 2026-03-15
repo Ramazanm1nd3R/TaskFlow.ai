@@ -21,6 +21,7 @@ class TaskTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final chipColor = task.isCompleted ? AppColors.success : AppColors.warning;
+    final textTheme = Theme.of(context).textTheme;
 
     return AppCard(
       margin: const EdgeInsets.only(bottom: 12),
@@ -52,48 +53,62 @@ class TaskTile extends StatelessWidget {
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
                       task.title,
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            decoration:
-                                task.isCompleted ? TextDecoration.lineThrough : null,
-                          ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: textTheme.titleMedium?.copyWith(
+                        decoration: task.isCompleted
+                            ? TextDecoration.lineThrough
+                            : null,
+                      ),
                     ),
                     const SizedBox(height: 6),
-                    Text(
-                      '${task.category} · ${task.priority.name}',
-                      style: Theme.of(context).textTheme.bodyMedium,
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        _MetaChip(label: task.category),
+                        _MetaChip(label: task.priority.name),
+                      ],
                     ),
                   ],
                 ),
               ),
+              const SizedBox(width: 12),
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 7,
+                ),
                 decoration: BoxDecoration(
                   color: chipColor.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(999),
                 ),
                 child: Text(
                   task.status.name,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: chipColor,
-                        fontWeight: FontWeight.w700,
-                      ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: textTheme.bodySmall?.copyWith(
+                    color: chipColor,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
             ],
           ),
           const SizedBox(height: 14),
-          Row(
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
             children: [
               OutlinedButton.icon(
                 onPressed: onEdit,
                 icon: const Icon(Icons.edit_outlined, size: 16),
                 label: const Text('Edit'),
               ),
-              const SizedBox(width: 8),
               OutlinedButton.icon(
                 onPressed: onDelete,
                 icon: const Icon(Icons.delete_outline, size: 16),
@@ -108,5 +123,28 @@ class TaskTile extends StatelessWidget {
         ],
       ),
     ).animate().fadeIn(duration: 280.ms).slideY(begin: 0.03, end: 0);
+  }
+}
+
+class _MetaChip extends StatelessWidget {
+  const _MetaChip({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: AppColors.cardMuted,
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        label,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: Theme.of(context).textTheme.bodySmall,
+      ),
+    );
   }
 }

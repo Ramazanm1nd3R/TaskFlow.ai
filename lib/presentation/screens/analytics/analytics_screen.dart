@@ -63,7 +63,8 @@ class _AnalyticsContent extends StatelessWidget {
         children: [
           const _SectionHeader(
             title: 'Analytics',
-            subtitle: 'A quieter view of your momentum, consistency, and focus.',
+            subtitle:
+                'A quieter view of your momentum, consistency, and focus.',
           ).animate().fadeIn(duration: 220.ms),
           const SizedBox(height: 24),
           _StatsCardsGrid(data: data).animate().fadeIn(duration: 260.ms),
@@ -203,6 +204,7 @@ class _StatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
     return _SurfaceCard(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
       child: Column(
@@ -218,15 +220,14 @@ class _StatCard extends StatelessWidget {
             child: Icon(data.icon, color: data.color, size: 18),
           ),
           const SizedBox(height: 12),
-          Text(
-            data.value,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.w800,
-              height: 1.0,
-              color: Color(0xFF1E293B),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              data.value,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: textTheme.headlineSmall,
             ),
           ),
           const SizedBox(height: 2),
@@ -234,12 +235,7 @@ class _StatCard extends StatelessWidget {
             data.label,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w500,
-              height: 1.2,
-              color: Color(0xFF64748B),
-            ),
+            style: textTheme.bodySmall,
           ),
         ],
       ),
@@ -248,16 +244,14 @@ class _StatCard extends StatelessWidget {
 }
 
 class _SectionHeader extends StatelessWidget {
-  const _SectionHeader({
-    required this.title,
-    this.subtitle,
-  });
+  const _SectionHeader({required this.title, this.subtitle});
 
   final String title;
   final String? subtitle;
 
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -268,20 +262,17 @@ class _SectionHeader extends StatelessWidget {
             children: [
               Text(
                 title,
-                style: const TextStyle(
-                  fontSize: 19,
-                  fontWeight: FontWeight.w700,
-                  color: Color(0xFF1E293B),
-                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: textTheme.titleLarge,
               ),
               if (subtitle != null) ...[
                 const SizedBox(height: 2),
                 Text(
                   subtitle!,
-                  style: const TextStyle(
-                    fontSize: 13,
-                    color: Color(0xFF64748B),
-                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: textTheme.bodyMedium,
                 ),
               ],
             ],
@@ -299,6 +290,7 @@ class _HeatmapCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
     return _SurfaceCard(
       padding: const EdgeInsets.all(20),
       child: SizedBox(
@@ -306,13 +298,11 @@ class _HeatmapCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'Weekly intensity',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF1E293B),
-              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: textTheme.titleSmall,
             ),
             const SizedBox(height: 12),
             const _HeatmapLegend(),
@@ -332,6 +322,7 @@ class _TrendChartCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
     return _SurfaceCard(
       padding: const EdgeInsets.all(20),
       child: SizedBox(
@@ -343,15 +334,17 @@ class _TrendChartCard extends StatelessWidget {
               show: true,
               drawVerticalLine: false,
               horizontalInterval: 2,
-              getDrawingHorizontalLine: (_) => const FlLine(
-                color: Color(0xFFE2E8F0),
-                strokeWidth: 1,
-              ),
+              getDrawingHorizontalLine: (_) =>
+                  const FlLine(color: Color(0xFFE2E8F0), strokeWidth: 1),
             ),
             borderData: FlBorderData(show: false),
             titlesData: FlTitlesData(
-              topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-              rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+              topTitles: const AxisTitles(
+                sideTitles: SideTitles(showTitles: false),
+              ),
+              rightTitles: const AxisTitles(
+                sideTitles: SideTitles(showTitles: false),
+              ),
               leftTitles: const AxisTitles(
                 sideTitles: SideTitles(showTitles: true, reservedSize: 28),
               ),
@@ -364,13 +357,15 @@ class _TrendChartCard extends StatelessWidget {
                       return const SizedBox.shrink();
                     }
                     return Padding(
-                      padding: const EdgeInsets.only(top: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 8,
+                      ),
                       child: Text(
                         DateFormat('E').format(data.last7Days[index].date),
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: Color(0xFF64748B),
-                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: textTheme.bodySmall,
                       ),
                     );
                   },
@@ -437,6 +432,7 @@ class _Pill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
@@ -444,21 +440,57 @@ class _Pill extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: const Color(0xFFE2E8F0)),
       ),
-      child: RichText(
-        text: TextSpan(
-          style: const TextStyle(fontSize: 13, color: Color(0xFF64748B)),
-          children: [
-            TextSpan(text: '$label: '),
-            TextSpan(
-              text: value,
-              style: const TextStyle(
-                fontWeight: FontWeight.w700,
-                color: Color(0xFF1E293B),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Flexible(
+            child: Text.rich(
+              TextSpan(
+                style: textTheme.bodySmall,
+                children: [
+                  TextSpan(text: '$label: '),
+                  TextSpan(
+                    text: value,
+                    style: textTheme.bodySmall?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
               ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             ),
-          ],
-        ),
+          ),
+        ],
       ),
+    );
+  }
+}
+
+class _AnalyticsCardsWrap extends StatelessWidget {
+  const _AnalyticsCardsWrap({required this.children});
+
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isCompact = constraints.maxWidth < 520;
+        final cardWidth = isCompact
+            ? constraints.maxWidth
+            : (constraints.maxWidth - 12) / 2;
+        return SingleChildScrollView(
+          child: Wrap(
+            spacing: 12,
+            runSpacing: 12,
+            children: [
+              for (final child in children)
+                SizedBox(width: cardWidth, child: child),
+            ],
+          ),
+        );
+      },
     );
   }
 }
@@ -473,27 +505,34 @@ class _AIInsightsGrid extends StatelessWidget {
     return insightsAsync.when(
       data: (insights) {
         final cards = [
-          _InsightCardData('🎯', 'Productivity', insights.productivity, const Color(0xFF3B82F6)),
-          _InsightCardData('📅', 'Best Day', insights.bestDay, const Color(0xFF10B981)),
-          _InsightCardData('⏱️', 'Avg Time', insights.completionTime, const Color(0xFFF59E0B)),
-          _InsightCardData('🏆', 'Top Category', insights.topCategory, const Color(0xFFEC4899)),
+          _InsightCardData(
+            '🎯',
+            'Productivity',
+            insights.productivity,
+            const Color(0xFF3B82F6),
+          ),
+          _InsightCardData(
+            '📅',
+            'Best Day',
+            insights.bestDay,
+            const Color(0xFF10B981),
+          ),
+          _InsightCardData(
+            '⏱️',
+            'Avg Time',
+            insights.completionTime,
+            const Color(0xFFF59E0B),
+          ),
+          _InsightCardData(
+            '🏆',
+            'Top Category',
+            insights.topCategory,
+            const Color(0xFFEC4899),
+          ),
         ];
 
-        return LayoutBuilder(
-          builder: (context, constraints) {
-            final cardWidth = (constraints.maxWidth - 12) / 2;
-            return Wrap(
-              spacing: 12,
-              runSpacing: 12,
-              children: [
-                for (final card in cards)
-                  SizedBox(
-                    width: cardWidth,
-                    child: _AIInsightCard(data: card),
-                  ),
-              ],
-            );
-          },
+        return _AnalyticsCardsWrap(
+          children: [for (final card in cards) _AIInsightCard(data: card)],
         );
       },
       loading: () => const _LoadingSurface(),
@@ -512,27 +551,34 @@ class _AIPredictionsGrid extends StatelessWidget {
     return predictionsAsync.when(
       data: (predictions) {
         final cards = [
-          _InsightCardData('📈', 'Next Week', predictions.nextWeekForecast, const Color(0xFF3B82F6)),
-          _InsightCardData('🧠', 'Burnout Risk', predictions.burnoutRisk, const Color(0xFFEF4444)),
-          _InsightCardData('📌', 'Daily Target', predictions.dailyRecommendation, const Color(0xFF10B981)),
-          _InsightCardData('⚡', 'Speed', predictions.completionSpeed, const Color(0xFF8B5CF6)),
+          _InsightCardData(
+            '📈',
+            'Next Week',
+            predictions.nextWeekForecast,
+            const Color(0xFF3B82F6),
+          ),
+          _InsightCardData(
+            '🧠',
+            'Burnout Risk',
+            predictions.burnoutRisk,
+            const Color(0xFFEF4444),
+          ),
+          _InsightCardData(
+            '📌',
+            'Daily Target',
+            predictions.dailyRecommendation,
+            const Color(0xFF10B981),
+          ),
+          _InsightCardData(
+            '⚡',
+            'Speed',
+            predictions.completionSpeed,
+            const Color(0xFF8B5CF6),
+          ),
         ];
 
-        return LayoutBuilder(
-          builder: (context, constraints) {
-            final cardWidth = (constraints.maxWidth - 12) / 2;
-            return Wrap(
-              spacing: 12,
-              runSpacing: 12,
-              children: [
-                for (final card in cards)
-                  SizedBox(
-                    width: cardWidth,
-                    child: _AIInsightCard(data: card),
-                  ),
-              ],
-            );
-          },
+        return _AnalyticsCardsWrap(
+          children: [for (final card in cards) _AIInsightCard(data: card)],
         );
       },
       loading: () => const _LoadingSurface(),
@@ -557,6 +603,7 @@ class _AIInsightCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -570,18 +617,21 @@ class _AIInsightCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              Text(data.icon, style: const TextStyle(fontSize: 20)),
+              Flexible(
+                child: Text(
+                  data.icon,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: textTheme.titleLarge,
+                ),
+              ),
               const SizedBox(width: 6),
               Expanded(
                 child: Text(
                   data.title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF64748B),
-                  ),
+                  style: textTheme.bodySmall,
                 ),
               ),
             ],
@@ -589,14 +639,9 @@ class _AIInsightCard extends StatelessWidget {
           const SizedBox(height: 10),
           Text(
             data.content,
-            maxLines: 2,
+            maxLines: 3,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              height: 1.3,
-              color: Color(0xFF1E293B),
-            ),
+            style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
           ),
         ],
       ),
@@ -611,6 +656,7 @@ class _TopCategoriesCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
     return _SurfaceCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -629,16 +675,15 @@ class _TopCategoriesCard extends StatelessWidget {
               final category = data.topCategories[index];
               return Row(
                 children: [
-                  SizedBox(
-                    width: 88,
-                    child: Text(
-                      category.name,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
-                        color: Color(0xFF1E293B),
+                  Flexible(
+                    flex: 3,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      child: Text(
+                        category.name,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: textTheme.bodyMedium,
                       ),
                     ),
                   ),
@@ -654,15 +699,17 @@ class _TopCategoriesCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 12),
-                  SizedBox(
-                    width: 28,
-                    child: Text(
-                      '${category.count}',
-                      textAlign: TextAlign.right,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF64748B),
+                  Flexible(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerRight,
+                        child: Text(
+                          '${category.count}',
+                          textAlign: TextAlign.right,
+                          style: textTheme.titleSmall,
+                        ),
                       ),
                     ),
                   ),
@@ -683,9 +730,14 @@ class _PriorityDistributionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
     final items = [
       ('High', data.priorityDistribution['high'] ?? 0, const Color(0xFFEF4444)),
-      ('Medium', data.priorityDistribution['medium'] ?? 0, const Color(0xFFF59E0B)),
+      (
+        'Medium',
+        data.priorityDistribution['medium'] ?? 0,
+        const Color(0xFFF59E0B),
+      ),
       ('Low', data.priorityDistribution['low'] ?? 0, const Color(0xFF10B981)),
     ];
 
@@ -726,19 +778,16 @@ class _PriorityDistributionCard extends StatelessWidget {
                     Expanded(
                       child: Text(
                         item.$1,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          color: Color(0xFF1E293B),
-                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: textTheme.bodyLarge,
                       ),
                     ),
-                    Text(
-                      '${item.$2}',
-                      style: const TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF64748B),
+                    Flexible(
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerRight,
+                        child: Text('${item.$2}', style: textTheme.titleSmall),
                       ),
                     ),
                   ],
@@ -811,10 +860,9 @@ class _ErrorSurface extends StatelessWidget {
     return _SurfaceCard(
       child: Text(
         message,
-        style: const TextStyle(
-          fontSize: 14,
-          color: Color(0xFF64748B),
-        ),
+        maxLines: 3,
+        overflow: TextOverflow.ellipsis,
+        style: Theme.of(context).textTheme.bodyMedium,
       ),
     );
   }
@@ -825,24 +873,40 @@ class _HeatmapLegend extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
     return Row(
-      children: const [
-        Text(
-          'Less',
-          style: TextStyle(fontSize: 12, color: Color(0xFF64748B)),
+      children: [
+        Flexible(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            child: Text(
+              'Less',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: textTheme.bodySmall,
+            ),
+          ),
         ),
-        SizedBox(width: 8),
-        _HeatCell(value: 0),
-        SizedBox(width: 4),
-        _HeatCell(value: 1),
-        SizedBox(width: 4),
-        _HeatCell(value: 2),
-        SizedBox(width: 4),
-        _HeatCell(value: 3),
-        SizedBox(width: 8),
-        Text(
-          'More',
-          style: TextStyle(fontSize: 12, color: Color(0xFF64748B)),
+        const SizedBox(width: 8),
+        const _HeatCell(value: 0),
+        const SizedBox(width: 4),
+        const _HeatCell(value: 1),
+        const SizedBox(width: 4),
+        const _HeatCell(value: 2),
+        const SizedBox(width: 4),
+        const _HeatCell(value: 3),
+        const SizedBox(width: 8),
+        Flexible(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            child: Text(
+              'More',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.right,
+              style: textTheme.bodySmall,
+            ),
+          ),
         ),
       ],
     );
@@ -856,6 +920,7 @@ class _Heatmap extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
     const labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
     return ListView.separated(
@@ -868,12 +933,14 @@ class _Heatmap extends StatelessWidget {
         return Row(
           children: [
             SizedBox(
-              width: 36,
-              child: Text(
-                labels[index],
-                style: const TextStyle(
-                  fontSize: 12,
-                  color: Color(0xFF64748B),
+              width: 52,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                child: Text(
+                  labels[index],
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: textTheme.bodySmall,
                 ),
               ),
             ),
@@ -888,11 +955,14 @@ class _Heatmap extends StatelessWidget {
                     runSpacing: 4,
                     children: [
                       for (var hour = 0; hour < 12; hour++)
-                        SizedBox(
-                          width: cellWidth,
-                          child: AspectRatio(
-                            aspectRatio: 1,
-                            child: _HeatCell(value: heatmap[row]?[hour] ?? 0),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          child: SizedBox(
+                            width: cellWidth,
+                            child: AspectRatio(
+                              aspectRatio: 1,
+                              child: _HeatCell(value: heatmap[row]?[hour] ?? 0),
+                            ),
                           ),
                         ),
                     ],
